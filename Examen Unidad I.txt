@@ -1,0 +1,70 @@
+select * from bd_facts.tbl_asesores;
+select * from tbl_clientes;
+select * from tbl_facturas;
+
+#Pregunta 4
+select 
+	ases.numeroID, 
+    concat(ases.nombres,' ' ,ases.apellidos) Nombre,
+    ases.apellidos,
+    cantClientes
+   
+from bd_facts.tbl_asesores ases 
+left join bd_facts.tbl_clientes cl 
+on ases.idAsesor = cl.idAsesor 
+where cl.idAsesor is null;
+
+#Pregunta 5 
+select
+cl.idCliente,
+cl.nombrecompleto,
+F.idFactura,
+F.fechaEmision,
+F.fechaVencimiento,
+F.fechapagada
+from tbl_facturas F inner join tbl_clientes cl on F.idCliente = cl.idCliente
+where F.fechaVencimiento between '2022-01-01 22:36:30' and '2022-02-28 04:11:10';
+
+#Pregunta 6
+# Cliente 101
+set @v_idAsesor = 14; 
+set @v_idCliente = 101;
+set @v_cantClientes = 0;/
+
+ # Cliente 128
+set @v_idAsesor = 1; 
+set @v_idCliente = 128;
+set @v_cantClientes = 0;
+
+# Asignación en la tabla cliente
+
+update bd_facts.tbl_clientes
+set idAsesor = @v_idAsesor
+where idCliente =  @v_idCliente;
+
+#Actualización de tabla cliente
+
+ select count(*) into @v_cantClientes
+ from bd_facts.tbl_clientes
+ where idAsesor = @v_idAsesor;
+ 
+update bd_facts.tbl_asesores
+set cantClientes = @v_cantClientes
+where idAsesor =  @v_idAsesor; 
+
+select * from bd_facts.tbl_clientes where idAsesor = 1;
+select cantClientes from bd_facts.tbl_asesores where idAsesor = 1;
+
+#7
+SELECT tbl_clientes.idAsesor,tbl_asesores.numeroID,tbl_asesores.nombres,tbl_asesores.apellidos 
+
+from tbl_asesores left join tbl_clientes on tbl_clientes.idAsesor=tbl_asesores.idAsesor 
+where tbl_clientes.idAsesor IS NOT NULL;
+
+select tbl_clientes.idCliente,tbl_clientes.nombrecompleto,tbl_facturas.idFactura,tbl_facturas.fechaEmision,tbl_facturas.fechaVencimiento 
+from tbl_facturas left join tbl_clientes on tbl_clientes.idCliente=tbl_facturas.idCliente 
+where curdate()>tbl_facturas.fechaVencimiento;
+
+set @asesorAsignado=1;
+set @clienteAsignado=101;
+set @cantClientes=0;
