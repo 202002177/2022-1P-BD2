@@ -1,1 +1,39 @@
+Drop Procedure if Exists bd_factsv2.sp_producto_factura;
 
+
+delimiter //
+create procedure bd_factsv2.sp_producto_factura(
+in p_idProducto int,
+in p_idFactura int,
+in p_cantidad int
+)
+begin 
+	declare precioproducto decimal(12,2);
+    declare Inventario int;
+    declare unidadtotal int;
+	declare totalproductos int;
+    declare subTotal decimal(12,2);
+    declare total_isv decimal(12,2);
+    declare total_pagar decimal(12,2);
+    
+	set precioproducto=(select precioVenta from tbl_productos where idProducto=p_idProducto);
+    set Inventario = (select saldoUnidades from tbl_productos WHERE idProducto=p_idProducto);
+    
+    if Inventario >=p_cantidad THEN
+     insert into tbl_productos_facturados values(p_idProducto,p_idFactura,p_cantidad, precioproducto * 0.15 ,precioproducto);
+     set unidadtotal = (Inventario - p_cantidad);
+     update tbl_productos set saldoUnidades = unidadtotal where idProducto=p_idProducto;
+     set totalproductos=(select count(cantidad) from tbl_productos_facturados where idFactura=p_idProducto);
+	 set subTotal=(select subTotalPagar from tbl_facturas where idFactura=p_idFactura);
+     set total_isv=(select totalISV from tbl_facturas where idFactura=p_idFactura);
+     set total_pagar=(select totalpagar from tbl_facturas where idFactura=p_idFactura);
+     
+     update tbl_facturas set cantidadProductos=totalproductos , subTotalPagar=(precioproducto * p_cantidad) + subTotal, totalISV = (p_cantidad * ( precioproducto * 0.15) ) + total_isv ,
+     totalpagar= ((precioproducto * p_cantidad)+(p_cantidad * ( precioproducto * 0.15) )) + total_pagar where idFactura =p_idFactura; 
+     
+    else
+     select 'Sin Inventario';
+    END IF;
+	
+	commit;
+END;
